@@ -16,12 +16,12 @@ module main_tb(
     reg CLK; 
     
     main DUT(
-      .CLK  ( CLK       ),
-      .SW   ( SW[9:0]   ),
-      .KEY  ( KEY[1:0]  ),
-      .HEX1 ( HEX1[6:0] ),
-      .HEX2 ( HEX2[6:0] ),
-      .LedR ( LedR[9:0] )
+      .clk_50MHZ ( CLK       ),
+      .SW_i      ( SW[9:0]   ),
+      .KEY_i     ( KEY[1:0]  ),
+      .HEX1_o    ( HEX1[6:0] ),
+      .HEX2_o    ( HEX2[6:0] ),
+      .LedR_o    ( LedR[9:0] )
     );
     
      initial begin 
@@ -40,10 +40,11 @@ module main_tb(
     end
     
     initial begin
+      #50
       repeat(16) begin
         #50
         KEY[0] = 1'b0;
-        #50;
+        #50
         KEY[0] = 1'b1;
       end  
     end
