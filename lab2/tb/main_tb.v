@@ -6,10 +6,11 @@ module main_tb(
     localparam CLK_FREQ_MHZ   = 50;
     localparam CLK_SEMIPERIOD = ( 500 / CLK_FREQ_MHZ ) / 2;
     
-    reg [1:0] KEY;
-    reg [9:0] SW;
+    reg [2:0] key_i;
+    reg [9:0] sw_i;
     reg       CLK;
     
+    wire [6:0] HEX0;
     wire [6:0] HEX1;
     wire [6:0] HEX2;
     wire [9:0] LedR;
@@ -17,58 +18,63 @@ module main_tb(
     
     main DUT(
       .clk_50MHZ ( CLK       ),
-      .SW_i      ( SW[9:0]   ),
-      .KEY_i     ( KEY[1:0]  ),
+      .SW_i      ( sw_i[9:0]   ),
+      .KEY_i     ( key_i[2:0]  ),
+      .HEX0_o    ( HEX0[6:0] ),
       .HEX1_o    ( HEX1[6:0] ),
       .HEX2_o    ( HEX2[6:0] ),
       .LedR_o    ( LedR[9:0] )
     );
     
-     initial begin 
-    CLK = 1'b0;
-    forever #CLK_SEMIPERIOD CLK = ~CLK;
-  end
+    initial begin 
+      CLK = 1'b0;
+      forever
+        #CLK_SEMIPERIOD CLK = ~CLK;
+    end
         
     initial begin
-      KEY[1] = 1'b0;
-      repeat(16) begin
-        #25
-        KEY[1] = 1'b1;
-        #500;
-        KEY[1] = 1'b0;
-      end  
+      key_i[1] <= 1'b1;
+      #20
+      key_i[1] <= 1'b0;
+      #20
+      key_i[1] <= 1'b1;
+      #140
+      key_i[1] <= 1'b0;
+      #180
+      key_i[1] <= 1'b1;
     end
-    
+
+    initial begin 
+      sw_i[9:0] <= 0;
+      repeat(120) begin
+        #9;
+        sw_i[9:0] <= $random()/100;
+      end
+    end
+
     initial begin
-      #50
-      repeat(16) begin
-        #50
-        KEY[0] = 1'b0;
-        #50
-        KEY[0] = 1'b1;
-      end  
-    end
-    
+      key_i[0] <= 1;
+      forever 
+        #16 key_i[0] <= ~key_i[0];
+     end 
+
     initial begin
-        SW[9:8]=2'd0;
-       #400;
-       SW[9:8]=2'd1;
-       #400;
-        SW[9:8]=2'd2;
-        #400;
-        SW[9:8]=2'd3;
-       #400;
-       $stop;
+      key_i[2] <= 1;
+      forever 
+        #32 key_i[2] <= ~key_i[2];
     end
-    initial begin
-        SW[3:0]=4'd0;
-         SW[7:4]=4'd0;
-        repeat(16) begin
-           #100;
-           SW[3:0]=$random();
-           SW[7:4]=$random();
-        end
+
+
+    initial begin 
+      sw_i[10] <= 1'b1;
+      #100;
+      sw_i[10] <= 1'b0;
+      #64;
+      sw_i[10] <= 1'b1;
+      #300;
+      sw_i[10] <= 1'b0;
+      #330;
+      sw_i[10] <= 1'b1;
     end
     
-    
-endmodule
+ endmodule

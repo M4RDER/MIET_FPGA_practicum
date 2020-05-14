@@ -2,39 +2,38 @@
 
 
 module counter(
-input            clk_i,
+  input                clk_i,
 
-input            en_i,
-input            rstn_i,
-
-input      [9:0] SW_i,
-
-output reg [7:0] counter_o
-);
+  input                rstn_i,
+  input                en_i,
+  input                k2_i,
+  
+  output reg     [7:0] counter_o
+  );
  
-reg sw_event;
+  reg [1:0] button_syncroniser;
+  wire      k_event;
 
-always @( SW_i )begin
-  if ( ( SW_i [0] + SW_i [1] + SW_i [2] + SW_i [3] + SW_i [4] + SW_i [5] + SW_i [6] + SW_i [7] + SW_i [8] + SW_i [9] ) > 4'd3 )  
-    sw_event <= 1'b1; 
-  else sw_event <= 1'b0;
-end 
+  assign k_event =  en_i || k2_i;
 
+  always @( posedge clk_i or negedge rstn_i ) begin
+    if ( !rstn_i )
+      button_syncroniser <= 2'b0;
+    else begin
+      button_syncroniser[0] <= ~k_event;
+      button_syncroniser[1] <=  button_syncroniser[0];
+    end
+  end
 
-reg [2:0] button_syncroniser;
-wire      button_was_pressed;
+  assign synced_signal_o = ~button_syncroniser[1] & button_syncroniser[0];
 
-always @( posedge clk_i ) begin
-  button_syncroniser[0] <= !en_i;
-  button_syncroniser[1] <= button_syncroniser[0];
-  button_syncroniser[2] <= button_syncroniser[1];
+  always @( posedge clk_i or negedge rstn_i ) begin
+  if ( !rstn_i ) 
+    counter_o <= 0; 
+  else if ( synced_signal_o ) begin 
+    counter_o <= counter_o + 1;
+  end
 end
 
-assign button_was_pressed =  ~button_syncroniser[2] & button_syncroniser[1] ;
 
-
-always@( posedge clk_i or negedge rstn_i )begin
-  if( !rstn_i ) counter_o <= 0;
-  else if( button_was_pressed & sw_event ) counter_o <= counter_o + 1;
-end
-endmodule
+  endmodule
